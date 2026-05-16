@@ -18,11 +18,18 @@ Route::middleware('guest')->group(function () {
 // Logout hanya bisa diakses oleh pengguna yang SUDAH login
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
-// --- Modul 02: Halaman Utama & Publik (Bisa diakses siapa saja) ---
-Route::get('/', [BeritaController::class, 'index']); // Tampil Berita (QUE-03)
-Route::get('/berita/cari', [BeritaController::class, 'search']); // Cari Berita (QUE-04)
-Route::get('/berita/kategori/{id}', [BeritaController::class, 'filter']); // Filter Kategori (QUE-05)
-Route::get('/berita/{id}', [BeritaController::class, 'show']); // Detail Berita (QUE-06)
+// --- Modul 02: Halaman Utama & Publik ---
+
+// 1. Mengalihkan (redirect) URL utama localhost:8000 langsung ke halaman /login
+Route::redirect('/', '/login'); 
+
+// 2. Memindahkan Halaman Beranda (daftar berita) ke URL /beranda
+Route::get('/beranda', [BeritaController::class, 'index']); // Tampil Berita (QUE-03)
+
+// Sisa kodenya tetap sama
+Route::get('/berita/cari', [BeritaController::class, 'search']); 
+Route::get('/berita/kategori/{id}', [BeritaController::class, 'filter']); 
+Route::get('/berita/{id}', [BeritaController::class, 'show']);
 
 // --- Modul 03: Admin Dashboard (Berita & Kategori) ---
 // WAJIB login untuk mengakses rute di dalam grup admin
