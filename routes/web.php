@@ -5,6 +5,7 @@ use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\OpiniController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 // --- Modul 01: Autentikasi ---
 // Hanya bisa diakses oleh pengunjung yang BELUM login (Guest)
@@ -20,13 +21,17 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
 // --- Modul 02: Halaman Utama & Publik ---
 
-// 1. Mengalihkan (redirect) URL utama localhost:8000 langsung ke halaman /login
-Route::redirect('/', '/login'); 
+// Mengalihkan URL utama berdasarkan status login untuk mencegah perulangan (infinite loop)
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect('/beranda');
+    }
+    return redirect('/login');
+});
 
-// 2. Memindahkan Halaman Beranda (daftar berita) ke URL /beranda
+// Memindahkan Halaman Beranda (daftar berita) ke URL /beranda
 Route::get('/beranda', [BeritaController::class, 'index']); // Tampil Berita (QUE-03)
 
-// Sisa kodenya tetap sama
 Route::get('/berita/cari', [BeritaController::class, 'search']); 
 Route::get('/berita/kategori/{id}', [BeritaController::class, 'filter']); 
 Route::get('/berita/{id}', [BeritaController::class, 'show']);
