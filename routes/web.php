@@ -24,6 +24,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
 // Mengalihkan URL utama berdasarkan status login untuk mencegah perulangan (infinite loop)
 Route::get('/', function () {
     if (Auth::check()) {
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            return redirect('/admin/dashboard');
+        } else if ($user->role === 'member') {
+            return redirect('/member/dashboard');
+        }
         return redirect('/beranda');
     }
     return redirect('/login');
