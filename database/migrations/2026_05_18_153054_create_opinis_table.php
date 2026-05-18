@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('opini', function (Blueprint $table) {
             $table->id('id_opini');
             $table->string('judul_opini');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->text('isi');
             $table->timestamp('tanggal_publish')->nullable();
             $table->foreignId('id_user')

@@ -9,7 +9,7 @@ class Opini extends Model
 {
     use HasFactory; // <-- ini wajib
     protected $table = 'opini';
-    protected $fillable = ['judul_opini', 'isi', 'tanggal_publish', 'id_user', 'jumlah_view'];
+    protected $fillable = ['judul_opini', 'isi','slug', 'tanggal_publish', 'id_user', 'jumlah_view'];
 
     public function user()
     {

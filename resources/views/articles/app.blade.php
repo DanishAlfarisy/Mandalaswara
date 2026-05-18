@@ -40,11 +40,33 @@
         <h2 class="text-xl font-bold mb-4">Artikel Terkait</h2>
         <div class="grid md:grid-cols-3 gap-6">
             @foreach($relatedArticles as $rel)
-                <a href="{{ route('article.show', $rel->slug) }}" 
-                   class="block bg-blue-800 rounded overflow-hidden hover:bg-blue-700 transition cursor-pointer">
-                    <img src="{{ $rel->image ?? 'https://picsum.photos/300/200?random='.$loop->iteration }}" 
-                         class="w-full h-40 object-cover">
-                    <div class="p-2 font-semibold">{{ $rel->judul }}</div>
+               
+                <a href="{{ route('article.show', $rel->slug) }}"
+                    class="article-card group bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 block">
+                    <div class="overflow-hidden h-48 bg-gray-100">
+                        @if ($rel->gambar_thumbnail)
+                            <img src="{{ asset('uploads/' . $rel->gambar_thumbnail) }}" alt="{{ $rel->judul }}"
+                                class="w-full h-full object-cover">
+                        @else
+                            <div
+                                class="w-full h-full bg-gray-200 flex flex-col items-center justify-center text-gray-400 text-xs gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 opacity-40" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Tidak ada gambar
+                            </div>
+                        @endif
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="tag-pill">{{ $rel->kategori->nama_kategori ?? 'Umum' }}</span>
+                            <span
+                                class="text-gray-400 text-xs">{{ \Carbon\Carbon::parse($rel->tanggal_publish)->translatedFormat('d M Y') }}</span>
+                        </div>
+                        <h3 class="text-gray-900 font-bold text-base leading-snug line-clamp-2">{{ $rel->judul }}</h3>
+                    </div>
                 </a>
             @endforeach
         </div>

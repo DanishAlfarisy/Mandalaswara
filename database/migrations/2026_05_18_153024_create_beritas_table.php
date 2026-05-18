@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->text('isi');
             $table->timestamp('tanggal_publish')->nullable();
+            $table->string('gambar_thumbnail', 255)->nullable();
             $table->foreignId('id_user')
                 ->constrained('users', 'id_user') // <-- gunakan kolom id_user
                 ->onDelete('cascade');

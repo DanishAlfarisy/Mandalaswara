@@ -10,21 +10,45 @@ use App\Models\Kategori;
 class ArtikelController extends Controller
 {
     // Homepage
-    public function home()
+    public function home(Request $request)
     {
-        $heroArticle = Berita::latest()->first();
-        $latestArticle = Berita::latest()->skip(0)->first();
-        $latestArticlesSide = Berita::latest()->skip(1)->take(3)->get();
-        $opiniArticles = Opini::latest()->take(4)->get();
+        $keyword = $request->input('keyword');
 
+        // Hero article
+        $heroArticle = Berita::latest()->first();
+
+        // Latest Articles (main + side)
+        $latestArticlesQuery = Berita::with('kategori', 'user')
+            ->when($keyword, function ($query, $keyword) {
+                $query->where('judul', 'like', "%{$keyword}%")
+                    ->orWhere('isi', 'like', "%{$keyword}%")
+                    ->orWhereHas('user', fn($q) => $q->where('username', 'like', "%{$keyword}%"));
+            })->latest();
+
+        $latestArticle = $latestArticlesQuery->skip(0)->first();
+        $latestArticlesSide = $latestArticlesQuery->skip(1)->take(3)->get();
+
+        // Opini
+        $opiniArticles = Opini::with('user')
+            ->when($keyword, function ($query, $keyword) {
+                $query->where('judul_opini', 'like', "%{$keyword}%")
+                    ->orWhere('isi', 'like', "%{$keyword}%")
+                    ->orWhereHas('user', fn($q) => $q->where('username', 'like', "%{$keyword}%"));
+            })
+            ->take(4)
+            ->get();
+
+        // Politik
         $politicsCategory = Kategori::where('nama_kategori', 'Politik')->first();
         $politicsMain = $politicsCategory ? $politicsCategory->beritas()->latest()->first() : null;
         $politicsArticles = $politicsCategory ? $politicsCategory->beritas()->latest()->skip(1)->take(4)->get() : collect();
 
+        // Ekonomi
         $economyCategory = Kategori::where('nama_kategori', 'Ekonomi')->first();
         $economyMain = $economyCategory ? $economyCategory->beritas()->latest()->first() : null;
         $economyArticles = $economyCategory ? $economyCategory->beritas()->latest()->skip(1)->take(4)->get() : collect();
 
+        // Kategori untuk navbar
         $categories = Kategori::all();
 
         return view('welcome', compact(
@@ -36,7 +60,8 @@ class ArtikelController extends Controller
             'politicsArticles',
             'economyMain',
             'economyArticles',
-            'categories'
+            'categories',
+            'keyword'
         ));
     }
 

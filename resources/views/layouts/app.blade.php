@@ -5,108 +5,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MandalaSwara - Portal Berita</title>
-    {{-- Tailwind CDN --}}
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-       @vite('resources/css/app.css')
+    <title>@yield('title', 'MandalaSwara - Portal Berita')</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['"Playfair Display"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Category animated underline */
+        .cat-link {
+            position: relative;
+        }
+
+        .cat-link::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #E53935;
+            transition: width .22s ease;
+        }
+
+        .cat-link:hover::after,
+        .cat-link.active::after {
+            width: 100%;
+        }
+
+        /* Avatar dropdown */
+        .avatar-wrap:hover .avatar-dropdown {
+            display: block;
+        }
+
+        .avatar-dropdown {
+            display: none;
+        }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    @stack('styles')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-blue-900 text-white font-sans">
+<body class="bg-gray-50 text-gray-900 antialiased">
 
-    {{-- Navbar --}}
-    <nav class="bg-blue-900 px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
-        {{-- Logo --}}
-        <div class="flex items-center space-x-3 mb-2 md:mb-0">
-            <img src="https://picsum.photos/80/40?random=1" alt="MandalaSwara Logo" class="h-10">
+    {{-- ══════════════════════════════════════════ --}}
+    {{--  NAVBAR                                    --}}
+    {{-- ══════════════════════════════════════════ --}}
+    <header class="bg-[#1565C0] text-white shadow-sm sticky top-0 z-50">
+
+        {{-- Top Row --}}
+        <div class="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center">
+
+            {{-- Logo --}}
+            <a href="{{ route('home') }}" class="shrink-0 flex items-center">
+                {{-- Jika punya logo.png aktifkan baris ini:
+            <img src="{{ asset('images/logo.png') }}" alt="MandalaSwara" class="h-8 w-auto">
+            --}}
+                <span class="font-display font-extrabold text-xl text-white leading-none">
+                    Mandala<span class="text-[#E53935]">Swara</span>
+                </span>
+            </a>
+
+            {{-- Search --}}
+            <form action="{{ route('home') }}" method="GET"
+    class="flex-1 max-w-2xl mx-auto relative flex items-center">
+                {{-- Simpan kategori aktif jika ada --}}
+                @if (request('kategori'))
+                    <input type="hidden" name="kategori" value="{{ request('kategori') }}">
+                @endif
+                <input type="text" name="keyword" value="{{ request('keyword') }}"
+                    placeholder="Cari berita, opini, kategori…"
+                    class="w-full border border-gray-200 bg-gray-50 rounded-full px-4 py-1.5 pr-9
+                       text-sm text-gray-800 placeholder-gray-400
+                       focus:outline-none focus:ring-2 focus:ring-blue-200 transition">
+                <button type="submit" class="absolute right-3 text-gray-400 hover:text-blue-600 transition">
+                    <i class="fas fa-search text-xs"></i>
+                </button>
+            </form>
+
+            {{-- <div class="flex-1 hidden md:block"></div> --}}
+
+            {{-- Nav Links --}}
+            <nav class="hidden md:flex items-center gap-5 text-sm font-semibold text-white">
+                <a href="{{ route('home') }}"
+                    class="cat-link pb-0.5 hover:text-white transition-colors
+                      {{ request()->routeIs('home') ? 'text-red-500 active' : '' }}">
+                    Home
+                </a>
+                <a href="#" class="cat-link pb-0.5 hover:text-white transition-colors">About</a>
+                <a href="#" class="cat-link pb-0.5 hover:text-white transition-colors">Contact</a>
+            </nav>
+
+            {{-- Auth --}}
+            @auth
+                <div class="avatar-wrap relative shrink-0 mx-10">
+                    <button
+                        class="w-7 h-7 rounded-full bg-[#1565C0] text-white flex items-center
+                               justify-center font-bold text-sm shadow-sm outline-white/50 outline-2 outline-offset-2 hover:outline focus:outline transition">
+                        {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
+                    </button>
+                    <div
+                        class="avatar-dropdown absolute right-0 top-full mt-1.5 w-52 bg-white
+                            rounded-2xl shadow-xl border border-gray-100 py-1.5 z-50">
+                        <div class="px-4 py-2.5 border-b border-gray-100">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wide">Masuk sebagai</p>
+                            <p class="text-sm font-bold text-gray-800 truncate">
+                                {{ auth()->user()->username }}
+                            </p>
+                            <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">
+                                {{ ucfirst(auth()->user()->role) }}
+                            </span>
+                        </div>
+                        @if (auth()->user()->role === 'admin')
+                            <a href="/admin/dashboard"
+                                class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-gauge-high w-4 text-gray-400 text-xs"></i> Admin Dashboard
+                            </a>
+                        @elseif(auth()->user()->role === 'member')
+                            <a href="/member/dashboard"
+                                class="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-user w-4 text-gray-400 text-xs"></i> Dashboard Saya
+                            </a>
+                        @endif
+                        <div class="border-t border-gray-100 mt-1 pt-1">
+                            <form action="/logout" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full text-left flex items-center gap-2.5 px-4 py-2
+                                           text-sm text-red-500 hover:bg-red-50 transition-colors">
+                                    <i class="fas fa-arrow-right-from-bracket w-4 text-xs"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <a href="{{ route('article.create') }}"
+                    class="shrink-0 bg-[#E53935] hover:bg-red-700 text-white text-sm font-bold
+                      px-5 py-1.5 rounded-full transition-colors shadow-sm">
+                    Tulis
+                </a>
+                <a href="/login"
+                    class="shrink-0 border-2 border-[#1565C0] text-[#1565C0] hover:bg-blue-50
+                      text-sm font-bold px-4 py-1 rounded-full transition-colors">
+                    Masuk
+                </a>
+            @endauth
         </div>
 
-        {{-- Search Bar di tengah --}}
-        <div class="relative w-full max-w-md mx-auto md:mx-0 mb-2 md:mb-0">
-            <input type="text" placeholder="Search"
-                class="w-full rounded-full px-4 py-2 text-black focus:outline-none bg-white">
-            <button class="absolute right-2 top-2 text-gray-600 hover:text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-2" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-4.35-4.35m0 0a7 7 0 1110-10 7 7 0 01-10 10z" />
-                </svg>
-            </button>
+        {{-- Category Bar --}}
+        <div class="border-t border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 md:px-6">
+                <div class="flex items-center overflow-x-auto no-scrollbar">
+                    {{-- Semua --}}
+                    <a href="{{ route('home') }}"
+                        class="cat-link shrink-0 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider
+                          transition-colors whitespace-nowrap
+                          {{ request()->routeIs('home') && !request('kategori') ? 'text-[#E53935] active' : 'text-white hover:text-[#E53935]' }}">
+                        Semua
+                    </a>
+                    @php
+                        $navCategories = $categories ?? \App\Models\Kategori::all();
+                    @endphp
+                    @foreach ($navCategories as $cat)
+                        @php $slug = $cat->slug ?? \Illuminate\Support\Str::slug($cat->nama_kategori); @endphp
+                        <a href="{{ route('category.show', $slug) }}"
+                            class="cat-link shrink-0 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider
+                              transition-colors whitespace-nowrap
+                              {{ request()->routeIs('category.show') && request()->route('slug') === $slug ? 'text-[#E53935] active' : 'text-white hover:text-[#E53935]' }}">
+                            {{ $cat->nama_kategori }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
         </div>
+    </header>
 
-        {{-- Tombol Tulis --}}
-        <div class="flex space-x-3 md:ml-4">
-            <a href="#" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded-full">Tulis</a>
-        </div>
-    </nav>
-
-    
-    <div class="flex justify-center px-6 py-2 space-x-6 bg-blue-800 text-white">
-    @foreach($categories ?? [] as $cat)
-        <a href="{{ route('category.show', $cat->nama_kategori) }}" class="hover:underline">{{ $cat->nama_kategori }}</a>
-    @endforeach
-</div>
-
-    {{-- Main Content --}}
+    {{-- ══════════════════════════════════════════ --}}
+    {{--  MAIN                                      --}}
+    {{-- ══════════════════════════════════════════ --}}
     <main class="min-h-screen">
         @yield('content')
     </main>
 
-    {{-- Footer --}}
-    <footer class="bg-blue-800 mt-10 p-6 text-gray-300">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-6">
-            {{-- Logo + Sosial --}}
-            <div>
-                <img src="https://picsum.photos/80/40?random=2" alt="MandalaSwara Logo" class="h-10 mb-2">
-                <div class="flex space-x-2 mt-2">
-                    <a href="#" class="hover:underline">IG</a>
-                    <a href="#" class="hover:underline">TW</a>
-                    <a href="#" class="hover:underline">IN</a>
-                    <a href="#" class="hover:underline">YT</a>
+    {{-- ══════════════════════════════════════════ --}}
+    {{--  FOOTER                                    --}}
+    {{-- ══════════════════════════════════════════ --}}
+    <footer class="bg-[#0D47A1] text-white mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+
+                {{-- Brand + Sosmed --}}
+                <div class="col-span-2 md:col-span-1">
+                    <span class="font-display font-extrabold text-2xl block mb-1">
+                        Mandala<span class="text-red-400">Swara</span>
+                    </span>
+                    <p class="text-blue-200 text-xs leading-relaxed mb-5">
+                        Portal berita dan opini terpercaya untuk masyarakat Indonesia.
+                    </p>
+                    <p class="text-blue-300 text-[10px] font-bold uppercase tracking-widest mb-3">
+                        Media Sosial
+                    </p>
+                    <div class="flex gap-2.5">
+                        @foreach ([['fab fa-instagram', '#'], ['fab fa-twitter', '#'], ['fab fa-linkedin', '#'], ['fab fa-youtube', '#']] as [$icon, $href])
+                            <a href="{{ $href }}"
+                                class="w-8 h-8 rounded-full bg-white/10 hover:bg-[#E53935]
+                              flex items-center justify-center text-sm transition-colors">
+                                <i class="{{ $icon }}"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Informasi --}}
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-blue-300 mb-4">
+                        Informasi
+                    </h4>
+                    <ul class="space-y-2.5 text-sm text-blue-100">
+                        @foreach ([
+        'Beranda' => route('home'),
+        'Tentang Kami' => '#',
+        'Kebijakan Privasi' => '#',
+        'Hubungi Kami' => '#',
+    ] as $label => $href)
+                            <li>
+                                <a href="{{ $href }}"
+                                    class="hover:text-white hover:underline transition-colors">
+                                    {{ $label }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                {{-- Jaringan --}}
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-blue-300 mb-4">
+                        Jaringan Media
+                    </h4>
+                    <ul class="space-y-2.5 text-sm text-blue-100">
+                        @foreach (['MandalaSwara TV', 'MandalaSwara Magazine', 'MandalaSwara English', 'Mandalaswara+'] as $item)
+                            <li>
+                                <a href="#"
+                                    class="hover:text-white hover:underline transition-colors">{{ $item }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                {{-- Layanan + App --}}
+                <div>
+                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-blue-300 mb-4">
+                        Layanan
+                    </h4>
+                    <ul class="space-y-2.5 text-sm text-blue-100 mb-5">
+                        @foreach (['FAQ' => '#', 'Bantuan' => '#', 'Pedoman Redaksi' => '#'] as $label => $href)
+                            <li>
+                                <a href="{{ $href }}"
+                                    class="hover:text-white hover:underline transition-colors">
+                                    {{ $label }}
+                                </a>
+                            </li>
+                        @endforeach
+                        <li>
+                            <a href="mailto:admin@mandalaswara.id" class="hover:text-white transition-colors break-all">
+                                admin@mandalaswara.id
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="flex flex-col gap-2">
+                        <a href="#"
+                            class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-xl px-3 py-2 transition-colors">
+                            <i class="fab fa-apple text-xl"></i>
+                            <div class="leading-tight">
+                                <div class="text-[9px] text-blue-300">Download on the</div>
+                                <div class="text-xs font-bold">App Store</div>
+                            </div>
+                        </a>
+                        <a href="#"
+                            class="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-xl px-3 py-2 transition-colors">
+                            <i class="fab fa-google-play text-xl"></i>
+                            <div class="leading-tight">
+                                <div class="text-[9px] text-blue-300">Get it on</div>
+                                <div class="text-xs font-bold">Google Play</div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            {{-- Informasi --}}
-            <div>
-                <h4 class="font-bold mb-2">Informasi</h4>
-                <ul class="space-y-1">
-                    <li><a href="#" class="hover:underline">Tentang Kami</a></li>
-                    <li><a href="#" class="hover:underline">Pedoman Redaksi</a></li>
-                    <li><a href="#" class="hover:underline">Kritik & Saran</a></li>
-                    <li><a href="#" class="hover:underline">Kontak</a></li>
-                </ul>
-            </div>
-
-            {{-- Jaringan Media --}}
-            <div>
-                <h4 class="font-bold mb-2">Jaringan Media</h4>
-                <ul class="space-y-1">
-                    <li><a href="#" class="hover:underline">MandalaSwara TV</a></li>
-                    <li><a href="#" class="hover:underline">MandalaSwara Magazine</a></li>
-                    <li><a href="#" class="hover:underline">MandalaSwara Radio</a></li>
-                </ul>
-            </div>
-
-            {{-- Layanan & App --}}
-            <div>
-                <h4 class="font-bold mb-2">Layanan</h4>
-                <ul class="space-y-1">
-                    <li><a href="#" class="hover:underline">Email: admin@mandalaswara.id</a></li>
-                    <li><a href="#" class="hover:underline">FAQ</a></li>
-                    <li><a href="#" class="hover:underline">Bantuan</a></li>
-                </ul>
-                <div class="mt-2 flex space-x-2">
-                    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/App_Store_logo.svg"
-                            class="h-8"></a>
-                    <a href="#"><img
-                            src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Google_Play_Store_badge_EN.svg"
-                            class="h-8"></a>
-                </div>
+            <div
+                class="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center
+                    justify-between gap-2 text-xs text-blue-300">
+                <p>Copyright &copy; {{ date('Y') }} mandalaswara.id. All rights reserved.</p>
+                <p>Made with <span class="text-red-400">♥</span> in Indonesia</p>
             </div>
         </div>
-        <p class="text-center text-sm mt-4">&copy; 2026 MandalaSwara. All rights reserved.</p>
     </footer>
 
+    @stack('scripts')
 </body>
 
 </html>
